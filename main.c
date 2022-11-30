@@ -1,7 +1,8 @@
-void* calloc(), usleep(), write();
+void* calloc(), usleep();
+int printf(const char*, ...);
 double sqrt(double);
 
-#define SIZE 128UL
+#define SIZE 250UL
 
 #define SHORTNESS 4
 #define SLIMNESS 10
@@ -16,7 +17,7 @@ void main(void){
             donut[i][j] = calloc(sizeof(_Bool), SIZE);
             for(k=0; k<SIZE; k++){
                 dist = sqrt(i*i+j*j+2*SIZE/2*(SIZE/2-i-j));
-                donut[i][j][k] = sqrt((dist-SIZE*1./SHORTNESS)*(dist-SIZE*1./SHORTNESS)+(k-SIZE/2)*(k-SIZE/2))<=SIZE*1./SLIMNESS;
+                donut[i][j][k] = sqrt((dist-SIZE*1./SHORTNESS)*(dist-SIZE/SHORTNESS)+(k-SIZE/2)*(k-SIZE/2))<=SIZE/SLIMNESS;
             }
         }
     }
@@ -24,21 +25,19 @@ void main(void){
     for(int i=0; i<SIZE; i++){
         for (int j = 0; j < SIZE; j++) {
             for (int k = 0; k < SIZE; k++) 
-                write(1, donut[j][k][i]?" 0":"  ", 2);
-            write(1, "|\n", 2);
+                printf(" %c ", donut[j][k][i] ? '0' : ' ');
+            printf("|\n");
         }
-        usleep(20000);
-        for (int k = 0; k < SIZE; k++)
-            write(1, "\n", 1);
+        usleep(40000);
+        printf("\033[2J\033[1;1H"); //ansi terminal only
     }
     for(int i=0; i<SIZE; i++){
         for (int j = 0; j < SIZE; j++) {
             for (int k = 0; k < SIZE; k++)
-                write(1, donut[i][k][j]||donut[i][j][k]?" #":"  ", 2);
-            write(1, "|\n", 2);
+                printf(" %c ", donut[i][k][j]||donut[i][j][k] ? '0' : ' ');
+            printf("|\n");
         }
-        usleep(70000);
-        for (int k = 0; k < SIZE; k++) 
-            write(1, "\n", 1);
+        usleep(40000);
+        printf("\033[2J\033[1;1H"); //ansi terminal only
     }
 }
