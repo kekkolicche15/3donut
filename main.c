@@ -1,77 +1,49 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-double sqrt(double __x);
+void* calloc();
+int usleep();
+long write();
+double sqrt(double);
 
-
-#define SIZE 300
+#define SIZE 128
+#define SIZE_UL (unsigned long)SIZE
 #define HALF (SIZE/2)
+
+
 #define SHORTNESS 4
-#define THICKNESS 10
+#define SLIMNESS 10
 
-
-int main(int argc, char**argv){
-    _Bool ***donut = calloc(sizeof(void*), SIZE);
-    for(int i=0; i<SIZE; i++){
-        donut[i] = calloc(sizeof(void*), SIZE);
-        for(int j=0; j<SIZE; j++){
-            donut[i][j] = calloc(sizeof(_Bool), SIZE);
-            for(int k=0; k<SIZE; k++){
-                double x = i-HALF;
-                double y = j-HALF;
-                double z = k-HALF;
-                double dist = sqrt(x*x+y*y);
-                x = dist;
-                y = 0.;
-                dist = sqrt((x-SIZE*1./SHORTNESS)*(x-SIZE*1./SHORTNESS)+z*z);
-                donut[i][j][k] = dist<=SIZE*1./THICKNESS;
+void main(void){
+    _Bool ***donut = calloc(sizeof(void*), SIZE_UL);
+    double dist;
+    int i, j, k;
+    for(i=0; i<SIZE; i++){
+        donut[i] = calloc(sizeof(void*), SIZE_UL);
+        for(j=0; j<SIZE; j++){
+            donut[i][j] = calloc(sizeof(_Bool), SIZE_UL);
+            for(k=0; k<SIZE; k++){
+                dist = sqrt(i*i+j*j+2*HALF*(HALF-i-j));
+                donut[i][j][k] = sqrt((dist-SIZE*1./SHORTNESS)*(dist-SIZE*1./SHORTNESS)+(k-HALF)*(k-HALF))<=SIZE*1./SLIMNESS;
             }
         }
     }
-    for(int i=0; i<SIZE; i++){
-        for(int j=0; j<SIZE; j++)
-            printf("%c", donut[i][j][HALF]?'*':'.');
-        printf("\n");
-    }
-    printf("\n");
-    printf("\n");
-    for(int i=0; i<SIZE; i++){
-        for(int j=0; j<SIZE; j++)
-            printf("%c", donut[HALF][i][j]?'*':'.');
-        printf("\n");
-    }
-    printf("\n");
-    printf("\n");
-    for(int i=0; i<SIZE; i++){
-        for(int j=0; j<SIZE; j++)
-            printf(" %c ", donut[i][HALF][j]?'#':' ');
-        printf("\n");
-    }
-
-    printf("\n");
-    printf("\n");
+    
     for(int i=0; i<SIZE; i++){
         for (int j = 0; j < SIZE; j++) {
-            for (int k = 0; k < SIZE; k++) {
-                printf(" %c ", donut[j][k][i]?'*':'.');
-            }
-            printf("\n");
+            for (int k = 0; k < SIZE; k++) 
+                write(1, donut[j][k][i]?" 0":"  ", 2);
+            write(1, "|\n", 2);
         }
-        usleep(20000);
-        for(int l=0; l<300;l++)
-            printf("\n");
+        usleep(70000);
+        for (int k = 0; k < SIZE; k++)
+            write(1, "\n", 2);
     }
     for(int i=0; i<SIZE; i++){
         for (int j = 0; j < SIZE; j++) {
-            for (int k = 0; k < SIZE; k++) {
-                printf(" %c ", donut[i][k][j]||donut[i][j][k]?'#':' ');
-            }
-            printf("|\n");
+            for (int k = 0; k < SIZE; k++)
+                write(1, donut[i][k][j]||donut[i][j][k]?" # ":"  ", 2);
+            write(1, "|\n", 2);
         }
-        usleep(20000);
-        for(int l=0; l<300;l++)
-            printf("\n");
+        usleep(70000);
+        for (int k = 0; k < SIZE; k++) 
+            write(1, "\n", 2);
     }
-
-    return 0;
 }
