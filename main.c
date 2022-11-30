@@ -11,7 +11,7 @@ double sqrt(double);
 
 void main(void){
     _Bool ***donut = calloc(sizeof(void*), SIZE);
-    int dist;
+    double dist;
     int i, j, k;
     for(i=0; i<SIZE; i++){
         donut[i] = calloc(sizeof(void*), SIZE);
