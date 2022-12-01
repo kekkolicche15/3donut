@@ -9,9 +9,11 @@ double sqrt(double);
 #define SLIMNESS 10
 
 #define SLEEP_uS 40000
+/*
 IZE; k++) 
                 printf(" %c ", chars[donut[j][k][i]]);
 }
+*/
 
 typedef unsigned char uint8_t;
 typedef char int8_t;
@@ -36,11 +38,17 @@ int min(int a, int b) {
 
 
 void main(void){
+    /*
     if(SIZE>=LIMIT)IZE; k++) 
                 printf(" %c ", chars[donut[j][k][i]]);
 }
 
         exit(-1);
+    */
+
+    if (SIZE > LIMIT)
+        exit(-1);
+
     _Bool ***donut = calloc(sizeof(void*), SIZE);
     uint8_t ***screen = calloc(sizeof(void*), SIZE);
     double dist;
