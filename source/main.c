@@ -4,6 +4,14 @@ double sqrt(double);
 double cos(double);
 double sin(double);
 
+int max(int a, int b) {
+    return a > b ? a : b;
+}
+
+int min(int a, int b) {
+    return a < b ? a : b;
+}
+
 #define SIZE 100UL
 
 #define SHORTNESS 4
@@ -12,6 +20,11 @@ double sin(double);
 #define SLEEP_uS 100000
 
 #define PI 3.141592653589793
+
+typedef unsigned char uint8_t;
+
+const char symbols[4] = {'*', ';', '-', '.'};
+const int symbols_size = 4;
 
 struct point {
     double x, y, z;
@@ -56,10 +69,10 @@ struct angle3d to_radians(struct angle3d theta) {
     theta.z = theta.z * 2 * PI / 360;
 }
 
-void print_matrix(_Bool **mat, int n, int m) {
+void print_matrix(uint8_t **mat, int n, int m) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            printf(" %c ", mat[i][j] ? '0' : ' ');
+            printf(" %c ", mat[i][j] ? symbols[mat[i][j] - 1] : ' ');
         }
         printf("|\n");
     }
@@ -108,12 +121,14 @@ int main(void){
         }
     }
 
-    _Bool **grid = calloc(sizeof(void*), SIZE);
+    uint8_t **grid = calloc(sizeof(void*), SIZE);
     for (int i = 0; i < SIZE; i++) {
-        grid[i] = calloc(sizeof(_Bool), SIZE);
+        grid[i] = calloc(sizeof(uint8_t), SIZE);
     }
 
     struct angle3d theta = {0., 0., 0.};
+
+    const double max_dist = SIZE * sqrt(1.5);
 
     while (1) {
         for (int i = 0; i < SIZE; i++) {
@@ -126,7 +141,12 @@ int main(void){
 
                     p = rotate(p, theta);
 
-                    grid[i][j] |= in_torus(p);
+                    if (in_torus(p) && !grid[i][j]) {
+                        double dist = sqrt(p.x * p.x + p.y * p.y + (p.z - SIZE/2) * (p.z - SIZE/2));
+                        int index = max(0, min(symbols_size - 1, (int) dist / max_dist * 4));
+                        grid[i][j] = index + 1;
+                        //grid[i][j] = 1;
+                    }
                     //donut[i][j][k] = in_torus(p);
                 }
             }
