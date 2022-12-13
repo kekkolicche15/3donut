@@ -1,77 +1,93 @@
-void* calloc(), usleep();
-int printf(const char*, ...);
+void *calloc(), usleep(), free(void*);
+int printf(const char *, ...);
 double sqrt(double);
 double cos(double);
 double sin(double);
+double round(double);
 
-int max(int a, int b) {
-    return a > b ? a : b;
-}
+typedef unsigned char uint8_t;
+
+const char *symbols = "MQW#BNqpHERmKdgAGbX8@SDO$PUkwZyF69heT0a&xVCs4fY52Lonz3ucJjvItr}{li?1][7<>=)(+*|!/\\;:-,\"_~^.'`";
+const int symbols_size = 94;
+const double PI = 3.141592653589793;
+
+const unsigned long SIZE = 100;
+const int NPOINTS = 200;
+const int R1 = 25;
+const int R2 = 10;
+const int SLEEP_uS = 17000;
+
+// --------------------
 
 int min(int a, int b) {
     return a < b ? a : b;
 }
 
-#define SIZE 100UL
-
-#define SHORTNESS 4
-#define SLIMNESS 10
-
-#define SLEEP_uS 100000
-
-#define PI 3.141592653589793
-
-typedef unsigned char uint8_t;
-
-const char symbols[4] = {'*', ';', '-', '.'};
-const int symbols_size = 4;
-
-struct point {
+struct point
+{
     double x, y, z;
 };
 
-struct angle3d {
+struct angle3d
+{
     double x, y, z;
 };
 
 // ruota di angle attorno all'asse x
-struct point xrotate(struct point p, double theta) {
+struct point xrotate(struct point p, double theta)
+{
     struct point q = p;
     q.y = p.y * cos(theta) - p.z * sin(theta);
     q.z = p.y * sin(theta) + p.z * cos(theta);
     return q;
 }
 
-struct point yrotate(struct point p, double theta) {
+struct point yrotate(struct point p, double theta)
+{
     struct point q = p;
     q.x = p.x * cos(theta) + p.z * sin(theta);
     q.z = -p.x * sin(theta) + p.z * cos(theta);
     return q;
 }
 
-struct point zrotate(struct point p, double theta) {
+struct point zrotate(struct point p, double theta)
+{
     struct point q = p;
     q.x = p.x * cos(theta) - p.y * sin(theta);
     q.y = p.x * sin(theta) + p.y * cos(theta);
     return q;
 }
 
-struct point rotate(struct point p, struct angle3d theta) {
+struct point rotate(struct point p, struct angle3d theta)
+{
     p = xrotate(p, theta.x);
     p = yrotate(p, theta.y);
     p = zrotate(p, theta.z);
     return p;
 }
 
-struct angle3d to_radians(struct angle3d theta) {
-    theta.x = theta.x * 2 * PI / 360;
-    theta.y = theta.y * 2 * PI / 360;
-    theta.z = theta.z * 2 * PI / 360;
+struct angle3d to_radians(struct angle3d *theta)
+{
+    theta->x = theta->x * 2 * PI / 360;
+    theta->y = theta->y * 2 * PI / 360;
+    theta->z = theta->z * 2 * PI / 360;
 }
 
-void print_matrix(uint8_t **mat, int n, int m) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
+struct point get_torus(double u, double v) {
+    struct point p = {(R1 + R2 * cos(v)) * cos(u), (R1 + R2 * cos(v)) * sin(u), R2 * sin(v)};
+    return p;
+}
+
+double dist(struct point p) {
+    return sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+}
+
+void print_matrix(uint8_t **mat, int n, int m)
+{
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < m; j++)
+        {
             printf(" %c ", mat[i][j] ? symbols[mat[i][j] - 1] : ' ');
         }
         printf("|\n");
@@ -79,93 +95,51 @@ void print_matrix(uint8_t **mat, int n, int m) {
     printf("\033[2J\033[1;1H");
 }
 
-_Bool in_torus(struct point p) {
-    double dist = sqrt(p.x*p.x+p.y*p.y);
-    p.x = dist;
-    p.y = 0.;
-    dist = sqrt((p.x-SIZE*1./SHORTNESS)*(p.x-SIZE*1./SHORTNESS)+p.z*p.z);
-    return dist <= SIZE * 1. / SLIMNESS;
-}
+// --------------------
 
-int main(void){
-    /*
-    _Bool ***donut = calloc(sizeof(void*), SIZE);
-    double dist;
-    int i, j, k;
-    for(i=0; i<SIZE; i++){
-        donut[i] = calloc(sizeof(void*), SIZE);
-        for(j=0; j<SIZE; j++){
-            donut[i][j] = calloc(sizeof(_Bool), SIZE);
-            for(k=0; k<SIZE; k++){
-                dist = sqrt(i*i+j*j+2*SIZE/2*(SIZE/2-i-j));
-                donut[i][j][k] = sqrt((dist-SIZE*1./SHORTNESS)*(dist-SIZE/SHORTNESS)+(k-SIZE/2)*(k-SIZE/2))<=SIZE/SLIMNESS;
-            }
-        }
-    }
-    
-    for(i=0; i<SIZE; i++, usleep(SLEEP_uS), printf("\033[2J\033[1;1H"))
-        for(j = 0; j<SIZE; j++, printf("|\n"))
-            for(k = 0; k<SIZE; k++) 
-                printf(" %c ", donut[j][k][i] ? '0' : ' ');
-    for(i=0; i<SIZE; i++, usleep(SLEEP_uS), printf("\033[2J\033[1;1H"))
-        for(j = 0; j<SIZE; j++, printf("|\n"))
-            for(k = 0; k<SIZE; k++)
-                printf(" %c ", donut[i][k][j]||donut[i][j][k] ? '0' : ' ');
-    */
-
-    _Bool ***donut = calloc(sizeof(void*), SIZE);
-    for(int i=0; i<SIZE; i++){
-        donut[i] = calloc(sizeof(void*), SIZE);
-        for(int j=0; j<SIZE; j++){
-            donut[i][j] = calloc(sizeof(_Bool), SIZE);
-        }
-    }
-
-    uint8_t **grid = calloc(sizeof(void*), SIZE);
+int main(void) {
+    // alloca la ciambella
+    uint8_t** donut = calloc(SIZE, sizeof(uint8_t*));
     for (int i = 0; i < SIZE; i++) {
-        grid[i] = calloc(sizeof(uint8_t), SIZE);
+        donut[i] = calloc(SIZE, sizeof(uint8_t));
     }
+
+    const double maxdist = (double) SIZE * 1.118033988749895;
 
     struct angle3d theta = {0., 0., 0.};
-
-    const double max_dist = SIZE * sqrt(1.5);
-
     while (1) {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
-                for (int k = 0; k < SIZE; k++) {
-                    struct point p;
-                    p.x = (double) i - SIZE / 2;
-                    p.y = (double) j - SIZE / 2;
-                    p.z = (double) k - SIZE / 2;
-
-                    p = rotate(p, theta);
-
-                    if (in_torus(p) && !grid[i][j]) {
-                        double dist = sqrt(p.x * p.x + p.y * p.y + (p.z - SIZE/2) * (p.z - SIZE/2));
-                        int index = max(0, min(symbols_size - 1, (int) dist / max_dist * 4));
-                        grid[i][j] = index + 1;
-                        //grid[i][j] = 1;
-                    }
-                    //donut[i][j][k] = in_torus(p);
-                }
+                donut[i][j] = 0;
             }
         }
 
-        print_matrix(grid, SIZE, SIZE);
+        for (int i = 0; i < NPOINTS; i++) {
+            for (int j = 0; j < NPOINTS; j++) {
+                struct point p = rotate(get_torus((double) i / NPOINTS * 2 * PI, (double) j / NPOINTS * 2 * PI), theta);
+                donut[((int) round(p.x)) + SIZE / 2][((int) round(p.y)) + SIZE / 2] = min((int) (dist(p) / maxdist * ((double) symbols_size)), symbols_size - 1);
+            }
+        }
 
+        printf("\033[2J\033[1;1H");
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
-                grid[i][j] = 0;
+                printf(" %c ", donut[i][j] ? symbols[donut[i][j]] : ' ');
             }
+            printf("\n");
         }
 
-        theta.x += 0.35;
-        theta.y += 0.35;
-        theta.z += 0.35;
-
+        theta.x += 0.05;
+        theta.y -= 0.04;
+        theta.z += 0.08;
         usleep(SLEEP_uS);
     }
+
+    // dealloca la ciambella
+    for (int i = 0; i < SIZE; i++) {
+        free(donut[i]);
+    }
+    free(donut);
 
     return 0;
 }
